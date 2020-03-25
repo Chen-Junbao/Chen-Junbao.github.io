@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chen-junbao.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Compose 文件是一个定义服务，网络和卷的 YAML 文件。  后缀名采用 .yml 和 .yaml 都可以。  service 定义包含了应用于为服务启动的每个容器的配置，像是传递给 docker run的命令行参数。同样， network 和 volume 定义类似于 docker network create和 docker volume create。配置选项是在构建时期应用的。在 D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker Compose">
+<meta property="og:url" content="https://chen-junbao.github.io/2020/03/25/DockerCompose/index.html">
+<meta property="og:site_name" content="陈俊豹的博客">
+<meta property="og:description" content="Compose 文件是一个定义服务，网络和卷的 YAML 文件。  后缀名采用 .yml 和 .yaml 都可以。  service 定义包含了应用于为服务启动的每个容器的配置，像是传递给 docker run的命令行参数。同样， network 和 volume 定义类似于 docker network create和 docker volume create。配置选项是在构建时期应用的。在 D">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-25T13:20:38.000Z">
+<meta property="article:modified_time" content="2020-03-25T13:41:37.130Z">
+<meta property="article:author" content="陈俊豹">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://chen-junbao.github.io/2020/03/25/DockerCompose/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Docker Compose | 陈俊豹的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband">
+      <a href="https://github.com/Chen-Junbao" target="_blank" rel="noopener" class="github-corner" aria-label="View My Github Profile"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    </div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">陈俊豹的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://chen-junbao.github.io/2020/03/25/DockerCompose/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="陈俊豹">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="陈俊豹的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Docker Compose
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-03-25 21:20:38 / 修改时间：21:41:37" itemprop="dateCreated datePublished" datetime="2020-03-25T21:20:38+08:00">2020-03-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Docker/" itemprop="url" rel="index"><span itemprop="name">Docker</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/25/DockerCompose/" class="post-meta-item leancloud_visitors" data-flag-title="Docker Compose" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/25/DockerCompose/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/25/DockerCompose/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Compose 文件是一个定义<strong>服务</strong>，<strong>网络</strong>和<strong>卷</strong>的 <strong>YAML</strong> 文件。</p>
+<blockquote>
+<p>后缀名采用 .yml 和 .yaml 都可以。</p>
+</blockquote>
+<p>service 定义包含了应用于为服务启动的每个容器的配置，像是传递给 <code>docker run</code>的命令行参数。同样， network 和 volume 定义类似于 <code>docker network create</code>和 <code>docker volume create</code>。配置选项是在构建时期应用的。在 Dockerfile 中指定的选项（如 CMD， EXPOSE，VOLUME，ENV等）同样会被利用，因此不必在 docker-compose 文件中再次指定这些选项。<br>整体采用 <code>&lt;key&gt;:&lt;option&gt;:&lt;value&gt;</code>的形式。</p>
+<a id="more"></a>
+<h2 id="services"><a href="#services" class="headerlink" title="services"></a>services</h2><h3 id="build"><a href="#build" class="headerlink" title="build"></a>build</h3><p>build 既可以是一个包含构建context路径的字符串，也可以是指明context和 可选的 Dockerfile 和 参数。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">build: .&#x2F;dir</span><br><span class="line"></span><br><span class="line">build:</span><br><span class="line">context: .&#x2F;dir</span><br><span class="line">dockerfile: Dockerfile-alternate</span><br><span class="line">args:</span><br><span class="line">    buildno: 1</span><br></pre></td></tr></table></figure>
+<p>如果指定了 image 和 build，Compose 会用在 image 中指定的镜像名和标签来命名构建的镜像。</p>
+<blockquote>
+<p>这个选项在 swarm 模型中是不奏效的，因为 <code>docker stack</code>只接受之前构建过的镜像。</p>
+</blockquote>
+<h4 id="CONTEXT"><a href="#CONTEXT" class="headerlink" title="CONTEXT"></a>CONTEXT</h4><p>Context 是一个包含 Dockerfile目录的路径或一个 git 仓库的 URL。当 context 值是一个相对路径时，相对的是 Compose 文件的位置。这个目录同样也是传递给 Docker 后台的构建 context。Compose 将构建和标记这个生成的镜像，并在之后利用它。</p>
+<h4 id="DOCKERFILE"><a href="#DOCKERFILE" class="headerlink" title="DOCKERFILE"></a>DOCKERFILE</h4><p>指定 dockerfile 选项后，Compose 会用这个指定的 dockerfile 来构建。</p>
+<h4 id="ARGS"><a href="#ARGS" class="headerlink" title="ARGS"></a>ARGS</h4><p>ARGS 指定的是构建过程中的环境变量。<br>首先需要在 Dockerfile 中指定这些参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ARG buildno</span><br><span class="line">ARG password</span><br><span class="line"></span><br><span class="line">RUN echo &quot;Build number: $buildno&quot;</span><br><span class="line">RUN script-requiring-password.sh &quot;$password&quot;</span><br></pre></td></tr></table></figure>
+<p>之后在 build 键中指定这些参数。可以通过映射或列表传递这些参数值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">build:</span><br><span class="line">  context: .</span><br><span class="line">  args:</span><br><span class="line">    buildno: 1</span><br><span class="line">    password: secret</span><br><span class="line"></span><br><span class="line">build:</span><br><span class="line">  context: .</span><br><span class="line">  args:</span><br><span class="line">    - buildno&#x3D;1</span><br><span class="line">    - password&#x3D;secret</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>YAML 文件中的布尔值（true，false，yes，no，on，off）必须用引号引起了，以便解析器会将它们解释为字符串。</p>
+</blockquote>
+<hr>
+<h3 id="command"><a href="#command" class="headerlink" title="command"></a>command</h3><p>重写默认的命令<br>有以下两种格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command: bundle exec thin -p 3000</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command: [&quot;bundle&quot;, &quot;exec&quot;, &quot;thin&quot;, &quot;-p&quot;, &quot;3000&quot;]</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="container-name"><a href="#container-name" class="headerlink" title="container_name"></a>container_name</h3><p>指定容器的名称，而不是采用默认生成的名称。<em>因为容器名称必须是独一无二的，所以如果指定了容器名，就不能在服务上扩展超过一个容器。</em></p>
+<hr>
+<h3 id="Deploy"><a href="#Deploy" class="headerlink" title="Deploy"></a>Deploy</h3><p>此选项只在用 docker stack deploy 部署到 Swarm 上才起作用， docker-compose up 或 docker-compose run 时会失效。</p>
+<h4 id="MODE"><a href="#MODE" class="headerlink" title="MODE"></a>MODE</h4><p>可以选择 global 和  replicated。默认采用 replicated。</p>
+<h4 id="REPLICAS"><a href="#REPLICAS" class="headerlink" title="REPLICAS"></a>REPLICAS</h4><p>如果服务的 mode 是 replicated,指明容器的数量。</p>
+<h4 id="PLACEMENT"><a href="#PLACEMENT" class="headerlink" title="PLACEMENT"></a>PLACEMENT</h4><p>指明布局约束。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;3&#39;</span><br><span class="line">services:</span><br><span class="line">  db:</span><br><span class="line">    image: postgres</span><br><span class="line">    deploy:</span><br><span class="line">      placement:</span><br><span class="line">        constraints:</span><br><span class="line">          - node.role &#x3D;&#x3D; manager</span><br><span class="line">          - engine.labels.operatingsystem &#x3D;&#x3D; ubuntu 14.04</span><br></pre></td></tr></table></figure>
+<h4 id="RESOURCES"><a href="#RESOURCES" class="headerlink" title="RESOURCES"></a>RESOURCES</h4><p>配置资源约束</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;3&#39;</span><br><span class="line">services:</span><br><span class="line">  redis:</span><br><span class="line">    image: redis:alpine</span><br><span class="line">    deploy:</span><br><span class="line">      resources:</span><br><span class="line">        limits:</span><br><span class="line">          cpus: &#39;0.001&#39;</span><br><span class="line">          memory: 50M</span><br><span class="line">        reservations:</span><br><span class="line">          cpus: &#39;0.0001&#39;</span><br><span class="line">          memory: 20M</span><br></pre></td></tr></table></figure>
+<h4 id="RESTART-POLICY"><a href="#RESTART-POLICY" class="headerlink" title="RESTART_POLICY"></a>RESTART_POLICY</h4><p>配置当容器退出的时候怎么重启它们。</p>
+<ul>
+<li>condition：none, on-failure 或者 any中的一个（默认为 any）</li>
+<li>delay：重启尝试操作之间需要等待多长时间（默认为0）</li>
+<li>max_attempts：最多尝试重启容器多少次（默认为无限次）</li>
+<li>window：决定重启是否成功需要等待多少时间（默认为立刻决定）</li>
+</ul>
+<hr>
+<h3 id="depends-on"><a href="#depends-on" class="headerlink" title="depends_on"></a>depends_on</h3><p>表明服务之间的依赖关系<br>这将有两个作用：</p>
+<ul>
+<li><code>docker-compose up</code>将会按照依赖顺序启动服务。例如，db 和 redis 将会在 web 之前启动。</li>
+<li><code>docker-compose up &lt;SERVICE&gt;</code>将会自动包含 SERVICE 的依赖。例如，执行 <code>docker-compose up web</code>将会创建和启动 db 和 redis。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;3&#39;</span><br><span class="line">services:</span><br><span class="line">  web:</span><br><span class="line">    build: .</span><br><span class="line">    depends_on:</span><br><span class="line">      - db</span><br><span class="line">      - redis</span><br><span class="line">  redis:</span><br><span class="line">    image: redis</span><br><span class="line">  db:</span><br><span class="line">    image: postgres</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<hr>
+<h3 id="env-file"><a href="#env-file" class="headerlink" title="env_file"></a>env_file</h3><p>从一个文件中添加环境变量<br>这个值可以是单一值，也可以是一个列表。<br>如果通过 <code>docker-compose -f FILE</code>指定了 Compose 文件，那么在 <code>env_file</code>中的文件的路径则相对与 Compose 文件的路径。<br>在 <code>environment</code>键中指定的环境变量将会覆盖在 <code>env_file</code>中指定的环境变量。</p>
+<ul>
+<li>环境变量文件格式<br>环境变量文件的内容应采用 <code>VARIABLE=VALUE</code>的格式。用 # 注释内容。<em>如果 VALUE 中包含引号，引号也会被包含到 VALUE 中传给 Compose</em></li>
+</ul>
+<blockquote>
+<p>如果服务的键中指定了 build 选项，在环境变量文件中定义的变量在构建期间是不可见的，需使用 args 子参数来定义相关环境变量。<br>在确定多次出现的变量的值的分配时，列表中的文件顺序很重要。在多个文件中都出现的变量，其值为最后一次出现的文件中的值。</p>
+</blockquote>
+<hr>
+<h3 id="environment"><a href="#environment" class="headerlink" title="environment"></a>environment</h3><p>添加环境变量<br>可以使用列表或字典。任何一个布尔值都必须用引号包围起来以确保不会被 YML 解析器转换为 True，False等。  </p>
+<blockquote>
+<p>如果服务的键中指定了 build 选项，在 <code>environment</code>中定义的变量在构建期间是不可见的，需使用 args 子参数来定义相关环境变量。</p>
+</blockquote>
+<hr>
+<h3 id="expose"><a href="#expose" class="headerlink" title="expose"></a>expose</h3><p>将指定的端口暴露给连接的容器，而不是对应的主机。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">expose:</span><br><span class="line"> - &quot;3000&quot;</span><br><span class="line"> - &quot;8000&quot;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="external-links"><a href="#external-links" class="headerlink" title="external_links"></a>external_links</h3><p>连接当前 YML 文件外启动的容器，甚至 Compose 外启动的容器，特别是提供共享或公共服务的容器。<br>语法格式：<code>&lt;container name&gt;:&lt;link alias&gt;</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">external_links:</span><br><span class="line"> - redis_1</span><br><span class="line"> - project_db_1:mysql</span><br><span class="line"> - project_db_1:postgresql</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="image"><a href="#image" class="headerlink" title="image"></a>image</h3><p>指定容器开始的镜像。<br>这个镜像可以是 repository/tag 的形式，或者是镜像 ID 的一部分。如果镜像不存在，Compose 会自动拉取，除非在 build 选项中已经采用特定的镜像构建了这个镜像。</p>
+<hr>
+<h3 id="links"><a href="#links" class="headerlink" title="links"></a>links</h3><p>连接另一个服务中的容器。可以指定服务名和连接别名（<SERVICE>:<ALIAS>），也可以直接使用服务名。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">web:</span><br><span class="line">  links:</span><br><span class="line">   - db</span><br><span class="line">   - db:database</span><br><span class="line">   - redis</span><br></pre></td></tr></table></figure>
+<p>Links 同样也表明了服务之间的依赖关系，因此它们决定了服务启动的顺序。</p>
+<blockquote>
+<p>如果定义了 links 和 networks，为了服务之间的交流，它们必须共享至少一个共同网络。</p>
+</blockquote>
+<hr>
+<h3 id="networks"><a href="#networks" class="headerlink" title="networks"></a>networks</h3><p>要加入的具体网络。具体的入口点在顶级的 networks 键中定义。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">services:</span><br><span class="line">  some-service:</span><br><span class="line">    networks:</span><br><span class="line">     - some-network</span><br><span class="line">     - other-network</span><br><span class="line"></span><br><span class="line">networks:</span><br><span class="line">  some-network:</span><br><span class="line">  other-network:</span><br></pre></td></tr></table></figure>
+
+<h4 id="ALIASES"><a href="#ALIASES" class="headerlink" title="ALIASES"></a>ALIASES</h4><p>在这个网络上这个服务的别名（可替代的主机名）。在同一网络上的其他容器既可以使用服务名也可以使用这个别名来连接服务中的某个容器。<br>因为 <code>aliases</code>是网络范围的，所以一个服务在不同的网络上可以有不同的别名。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;2&#39;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  web:</span><br><span class="line">    build: .&#x2F;web</span><br><span class="line">    networks:</span><br><span class="line">      - new</span><br><span class="line"></span><br><span class="line">  worker:</span><br><span class="line">    build: .&#x2F;worker</span><br><span class="line">    networks:</span><br><span class="line">      - legacy</span><br><span class="line"></span><br><span class="line">  db:</span><br><span class="line">    image: mysql</span><br><span class="line">    networks:</span><br><span class="line">      new:</span><br><span class="line">        aliases:</span><br><span class="line">          - database</span><br><span class="line">      legacy:</span><br><span class="line">        aliases:</span><br><span class="line">          - mysql</span><br><span class="line"></span><br><span class="line">networks:</span><br><span class="line">  new:</span><br><span class="line">  legacy:</span><br></pre></td></tr></table></figure>
+<p>在上述例子中，db 服务在 new 网络中可以以主机名 db 和 database 被访问，在 legacy 网络中可以以主机名 db 和 mysql 被访问。</p>
+<h4 id="IPV4-ADDRESS-IPV6-ADDRESS"><a href="#IPV4-ADDRESS-IPV6-ADDRESS" class="headerlink" title="IPV4_ADDRESS, IPV6_ADDRESS"></a>IPV4_ADDRESS, IPV6_ADDRESS</h4><p>当服务的容器加入网络中的时候，分配一个静态的 IP 地址。<br>在顶级 networks 相关配置中必须有一个包含了覆盖每个静态 IP 地址的子网配置的 ipam 块。如果使用了 IPv6地址，在顶级 networks 中必须设置 <code>enable_ipv6: true</code>。</p>
+<hr>
+<h3 id="ports"><a href="#ports" class="headerlink" title="ports"></a>ports</h3><p>暴露端口。</p>
+<h4 id="短语法"><a href="#短语法" class="headerlink" title="短语法"></a>短语法</h4><p>指定主机和容器的端口（<code>&lt;host port&gt;:&lt;container port&gt;</code>）或者直接指定容器的端口（此时主机的端口被随机选择）。</p>
+<blockquote>
+<p>最好总是将端口映射指定为字符串，因为 YAML 会将容器端口号小于60的映射解析为六十进制。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ports:</span><br><span class="line"> - &quot;3000&quot;</span><br><span class="line"> - &quot;3000-3005&quot;</span><br><span class="line"> - &quot;8000:8000&quot;</span><br><span class="line"> - &quot;9090-9091:8080-8081&quot;</span><br><span class="line"> - &quot;49100:22&quot;</span><br><span class="line"> - &quot;127.0.0.1:8001:8001&quot;</span><br><span class="line"> - &quot;127.0.0.1:5000-5010:5000-5010&quot;</span><br><span class="line"> - &quot;6060:6060&#x2F;udp&quot;</span><br></pre></td></tr></table></figure>
+<h4 id="长语法"><a href="#长语法" class="headerlink" title="长语法"></a>长语法</h4><p>长语法提供了额外的配置。</p>
+<ul>
+<li>target：容器内的端口</li>
+<li>published：公共暴露接口</li>
+<li>protocol：端口协议（UDP 或 TCP）</li>
+<li>mode：可以选择 host（在每个结点上发布主机端口）或 ingress（用于 swarm 模式的结点）</li>
+</ul>
+<hr>
+<h3 id="volumes"><a href="#volumes" class="headerlink" title="volumes"></a>volumes</h3><p>挂载主机路径或命名的卷。<br>命名的卷应该在顶级 volumes 键中定义。</p>
+<h4 id="短语法-1"><a href="#短语法-1" class="headerlink" title="短语法"></a>短语法</h4><p>可以选择是否指定访问模式，即：<code>&lt;host path&gt;:&lt;container path&gt;</code>或 <code>&lt;host path&gt;:&lt;container path&gt;:&lt;mode&gt;</code>。<br>主机路径若为相对路径，则是相对于正在使用的 Compose 配置文件的相对路径。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">volumes:</span><br><span class="line">  # Just specify a path and let the Engine create a volume</span><br><span class="line">  - &#x2F;var&#x2F;lib&#x2F;mysql</span><br><span class="line"></span><br><span class="line">  # Specify an absolute path mapping</span><br><span class="line">  - &#x2F;opt&#x2F;data:&#x2F;var&#x2F;lib&#x2F;mysql</span><br><span class="line"></span><br><span class="line">  # Path on the host, relative to the Compose file</span><br><span class="line">  - .&#x2F;cache:&#x2F;tmp&#x2F;cache</span><br><span class="line"></span><br><span class="line">  # User-relative path</span><br><span class="line">  - ~&#x2F;configs:&#x2F;etc&#x2F;configs&#x2F;:ro</span><br><span class="line"></span><br><span class="line">  # Named volume</span><br><span class="line">  - datavolume:&#x2F;var&#x2F;lib&#x2F;mysql</span><br></pre></td></tr></table></figure>
+<h4 id="长语法-1"><a href="#长语法-1" class="headerlink" title="长语法"></a>长语法</h4><p>长语法提供了额外的配置。</p>
+<ul>
+<li>type：挂载类型（volume 或 bind）</li>
+<li>source：挂载源（在主机上用于绑定挂载的路径或者在顶级 volumes 键中定义的 volume 名）</li>
+<li>target：卷在容器中被挂载的路径</li>
+<li>read_only：设置卷是否为只读</li>
+<li>bind：配置另外的绑定选项</li>
+<li>volume：配置另外的卷选项<ul>
+<li>nocopy：设置当创建卷的时候禁止从一个容器复制数据<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">volumes:</span><br><span class="line">  - type: volume</span><br><span class="line">    source: mydata</span><br><span class="line">    target: &#x2F;data</span><br><span class="line">    volume:</span><br><span class="line">      nocopy: true</span><br><span class="line">  - type: bind</span><br><span class="line">    source: .&#x2F;static</span><br><span class="line">    target: &#x2F;opt&#x2F;app&#x2F;static</span><br></pre></td></tr></table></figure>
+<h4 id="服务，Swarm和栈文件中的卷"><a href="#服务，Swarm和栈文件中的卷" class="headerlink" title="服务，Swarm和栈文件中的卷"></a>服务，Swarm和栈文件中的卷</h4>在没有指定源的卷的情况下，Docker会为每个容器创建一个匿名的卷。当对应的容器被删除的时候，匿名的卷不会被保留。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="restart"><a href="#restart" class="headerlink" title="restart"></a>restart</h3><ul>
+<li>no：即在任何情况下都不会重启一个容器</li>
+<li>always：容器总是重启</li>
+<li>on-failure：因为错误退出时重启</li>
+</ul>
+<hr>
+<h2 id="volumes-1"><a href="#volumes-1" class="headerlink" title="volumes"></a>volumes</h2><h3 id="driver"><a href="#driver" class="headerlink" title="driver"></a>driver</h3><p>指定当前卷使用的驱动。大部分情况默认是 local。如果驱动不可用，Docker Engine 在 <code>docker-compose up</code>创建卷时会返回一个错误。</p>
+<hr>
+<h3 id="external"><a href="#external" class="headerlink" title="external"></a>external</h3><p>如果为 true，指明这个卷在 Compose 外被创建，<code>docker-compose up</code>将不会尝试去创建它，并且在卷不存在的时候报错。</p>
+<hr>
+<h2 id="networks-1"><a href="#networks-1" class="headerlink" title="networks"></a>networks</h2><h3 id="driver-1"><a href="#driver-1" class="headerlink" title="driver"></a>driver</h3><p>指明哪个驱动用于这个网络。<br>默认的驱动取决于所配置的 Docker Engine。在大多数情况下，在单一主机上是 bridge，在 Swarm 上是 overlay。</p>
+<hr>
+<h3 id="enable-ipv6"><a href="#enable-ipv6" class="headerlink" title="enable_ipv6"></a>enable_ipv6</h3><p>配置是否使用 IPv6。</p>
+<hr>
+<h3 id="ipam"><a href="#ipam" class="headerlink" title="ipam"></a>ipam</h3><p>指定自定义 IPAM 配置。有以下几个可选的属性：</p>
+<ul>
+<li>driver：自定义 IPAM 驱动，而不是默认驱动</li>
+<li>config：一系列配置块。<ul>
+<li>subnet</li>
+<li>gateway</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="configs"><a href="#configs" class="headerlink" title="configs"></a>configs</h2><p>顶级 configs 声明定义或引用了服务中的 configs。这个配置的来源可以是 file 或 external。</p>
+<ul>
+<li>file：配置由指定路径的文件内容创建</li>
+<li>external：如果设置为 true，说明这个配置已经被创建了。Docker 不会尝试去创建它。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>万物皆有时，比如你我相遇</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechat_reward.jpg" alt="陈俊豹 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/25/Dockerfile/" rel="prev" title="创建镜像">
+      <i class="fa fa-chevron-left"></i> 创建镜像
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/25/DockerData/" rel="next" title="Docker 数据管理">
+      Docker 数据管理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#services"><span class="nav-number">1.</span> <span class="nav-text">services</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#build"><span class="nav-number">1.1.</span> <span class="nav-text">build</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CONTEXT"><span class="nav-number">1.1.1.</span> <span class="nav-text">CONTEXT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DOCKERFILE"><span class="nav-number">1.1.2.</span> <span class="nav-text">DOCKERFILE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ARGS"><span class="nav-number">1.1.3.</span> <span class="nav-text">ARGS</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#command"><span class="nav-number">1.2.</span> <span class="nav-text">command</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#container-name"><span class="nav-number">1.3.</span> <span class="nav-text">container_name</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deploy"><span class="nav-number">1.4.</span> <span class="nav-text">Deploy</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MODE"><span class="nav-number">1.4.1.</span> <span class="nav-text">MODE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REPLICAS"><span class="nav-number">1.4.2.</span> <span class="nav-text">REPLICAS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PLACEMENT"><span class="nav-number">1.4.3.</span> <span class="nav-text">PLACEMENT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RESOURCES"><span class="nav-number">1.4.4.</span> <span class="nav-text">RESOURCES</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RESTART-POLICY"><span class="nav-number">1.4.5.</span> <span class="nav-text">RESTART_POLICY</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#depends-on"><span class="nav-number">1.5.</span> <span class="nav-text">depends_on</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#env-file"><span class="nav-number">1.6.</span> <span class="nav-text">env_file</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#environment"><span class="nav-number">1.7.</span> <span class="nav-text">environment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#expose"><span class="nav-number">1.8.</span> <span class="nav-text">expose</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#external-links"><span class="nav-number">1.9.</span> <span class="nav-text">external_links</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#image"><span class="nav-number">1.10.</span> <span class="nav-text">image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#links"><span class="nav-number">1.11.</span> <span class="nav-text">links</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#networks"><span class="nav-number">1.12.</span> <span class="nav-text">networks</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ALIASES"><span class="nav-number">1.12.1.</span> <span class="nav-text">ALIASES</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPV4-ADDRESS-IPV6-ADDRESS"><span class="nav-number">1.12.2.</span> <span class="nav-text">IPV4_ADDRESS, IPV6_ADDRESS</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ports"><span class="nav-number">1.13.</span> <span class="nav-text">ports</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#短语法"><span class="nav-number">1.13.1.</span> <span class="nav-text">短语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#长语法"><span class="nav-number">1.13.2.</span> <span class="nav-text">长语法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#volumes"><span class="nav-number">1.14.</span> <span class="nav-text">volumes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#短语法-1"><span class="nav-number">1.14.1.</span> <span class="nav-text">短语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#长语法-1"><span class="nav-number">1.14.2.</span> <span class="nav-text">长语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务，Swarm和栈文件中的卷"><span class="nav-number">1.14.3.</span> <span class="nav-text">服务，Swarm和栈文件中的卷</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#restart"><span class="nav-number">1.15.</span> <span class="nav-text">restart</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#volumes-1"><span class="nav-number">2.</span> <span class="nav-text">volumes</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#driver"><span class="nav-number">2.1.</span> <span class="nav-text">driver</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#external"><span class="nav-number">2.2.</span> <span class="nav-text">external</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#networks-1"><span class="nav-number">3.</span> <span class="nav-text">networks</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#driver-1"><span class="nav-number">3.1.</span> <span class="nav-text">driver</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#enable-ipv6"><span class="nav-number">3.2.</span> <span class="nav-text">enable_ipv6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ipam"><span class="nav-number">3.3.</span> <span class="nav-text">ipam</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configs"><span class="nav-number">4.</span> <span class="nav-text">configs</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="陈俊豹"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">陈俊豹</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Chen-Junbao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Chen-Junbao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:Chen.Junbao@outlook.com" title="邮箱 → mailto:Chen.Junbao@outlook.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>邮箱</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">陈俊豹</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'd3NBQDg58PJrydwLzPKmOmk3-gzGzoHsz',
+      appKey     : 'b3o0GRT7XddGocDlCeYmgy9X',
+      placeholder: "期待您写下评论~",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

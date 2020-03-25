@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chen-junbao.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一、前言人体姿态估计（Human Pose Estimation）是计算机视觉领域一个很重要的问题，解决这个问题是正确理解图像和视频中人类行为重要的一步。在此篇文章中，我将根据人体姿态估计技术的发展历程做一个简要的介绍。 二、定义人体姿态估计技术用于解决标注图像和视频中人体关节点（如肩部、肘部、腕部等）的坐标。根据任务的特点不同，人体姿态估计可以分为二维（2D HPE）和三维（3D HPE）；根据">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于深度学习的人体姿态估计概述">
+<meta property="og:url" content="https://chen-junbao.github.io/2020/03/25/HPE-overview/index.html">
+<meta property="og:site_name" content="陈俊豹的博客">
+<meta property="og:description" content="一、前言人体姿态估计（Human Pose Estimation）是计算机视觉领域一个很重要的问题，解决这个问题是正确理解图像和视频中人类行为重要的一步。在此篇文章中，我将根据人体姿态估计技术的发展历程做一个简要的介绍。 二、定义人体姿态估计技术用于解决标注图像和视频中人体关节点（如肩部、肘部、腕部等）的坐标。根据任务的特点不同，人体姿态估计可以分为二维（2D HPE）和三维（3D HPE）；根据">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020021218521261.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200212185620780.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200212185745499.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200212185843144.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200212185933790.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200212190059668.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-03-25T13:10:49.000Z">
+<meta property="article:modified_time" content="2020-03-25T13:13:13.895Z">
+<meta property="article:author" content="陈俊豹">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/2020021218521261.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="https://chen-junbao.github.io/2020/03/25/HPE-overview/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>基于深度学习的人体姿态估计概述 | 陈俊豹的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband">
+      <a href="https://github.com/Chen-Junbao" target="_blank" rel="noopener" class="github-corner" aria-label="View My Github Profile"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    </div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">陈俊豹的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://chen-junbao.github.io/2020/03/25/HPE-overview/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="陈俊豹">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="陈俊豹的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          基于深度学习的人体姿态估计概述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-03-25 21:10:49 / 修改时间：21:13:13" itemprop="dateCreated datePublished" datetime="2020-03-25T21:10:49+08:00">2020-03-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A7%BF%E6%80%81%E4%BC%B0%E8%AE%A1/" itemprop="url" rel="index"><span itemprop="name">姿态估计</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/25/HPE-overview/" class="post-meta-item leancloud_visitors" data-flag-title="基于深度学习的人体姿态估计概述" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/25/HPE-overview/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/25/HPE-overview/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h1><p>人体姿态估计（Human Pose Estimation）是计算机视觉领域一个很重要的问题，解决这个问题是正确理解图像和视频中人类行为重要的一步。在此篇文章中，我将根据人体姿态估计技术的发展历程做一个简要的介绍。</p>
+<h1 id="二、定义"><a href="#二、定义" class="headerlink" title="二、定义"></a>二、定义</h1><p>人体姿态估计技术用于解决标注图像和视频中人体关节点（如肩部、肘部、腕部等）的坐标。根据任务的特点不同，人体姿态估计可以分为二维（2D HPE）和三维（3D HPE）；根据识别个体不同，可以分为单人姿态估计（Single-Person Pose Estimation）和多人姿态估计（Multi-Person Pose Estimation）。</p>
+<a id="more"></a>
+<h2 id="1-二维姿态估计（2D-Pose-Estimation）"><a href="#1-二维姿态估计（2D-Pose-Estimation）" class="headerlink" title="1. 二维姿态估计（2D Pose Estimation）"></a>1. 二维姿态估计（2D Pose Estimation）</h2><p>此技术用于从一个RGB图像或视频中估计每个关节点的二维坐标(x, y)。</p>
+<h2 id="2-三维姿态估计（3D-Pose-Estimation）"><a href="#2-三维姿态估计（3D-Pose-Estimation）" class="headerlink" title="2.    三维姿态估计（3D Pose Estimation）"></a>2.    三维姿态估计（3D Pose Estimation）</h2><p>此技术用于从一个RGB图像或视频中估计每个关节点的二维坐标(x, y, z)。</p>
+<h2 id="3-单人姿态估计（Single-Person-Pose-Estimation）"><a href="#3-单人姿态估计（Single-Person-Pose-Estimation）" class="headerlink" title="3.    单人姿态估计（Single-Person Pose Estimation）"></a>3.    单人姿态估计（Single-Person Pose Estimation）</h2><p>单人姿态估计输入是一个从图像中裁剪出的人体，然后在图像上标注出人体的各个关节点，如头部、肩部、肘部、腕部、膝盖、腿等。经过几年的算法提升，单人姿态估计目前已经能够达到较为出色的效果。</p>
+<h2 id="4-多人姿态估计（Multi-Person-Pose-Estimation）"><a href="#4-多人姿态估计（Multi-Person-Pose-Estimation）" class="headerlink" title="4.    多人姿态估计（Multi-Person Pose Estimation）"></a>4.    多人姿态估计（Multi-Person Pose Estimation）</h2><p>多人姿态估计的算法往往是以单人姿态估计算法为基础。多人姿态估计的输入是一张完整的图片，可能包含多个人体，其任务目的是将所有行人的关节点识别并标注出来。针对这一问题，一般有两种方法：自底向上——bottom-up和自顶向下——top-down。<br>对于自底向上方法，往往是先从图片中找出所有的关节点，如所有的腕部、脚踝等，然后将这些关节点一个个的组成一个行人，从而完成所有行人的关节点检测标注；而对于自顶向下方法，则恰恰相反，往往是先找出图片中的所有行人，然后对每个检测出的行人进行单人姿态估计，检测标注出每个行人的关节点。</p>
+<h2 id="5-应用场景"><a href="#5-应用场景" class="headerlink" title="5. 应用场景"></a>5. 应用场景</h2><p>人体姿态估计在动作识别、影视制作、体感游戏、人体定位等领域有着重要的应用背景。例如，使用姿态估计分析篮球运动员的移动和动作等。</p>
+<h3 id="5-1-动作识别"><a href="#5-1-动作识别" class="headerlink" title="5.1 动作识别"></a>5.1 动作识别</h3><p>通过实时检测人体的动作，可以用于检测一个人是否摔倒、用于体育、舞蹈等领域的教学训练，用于理解肢体语言，用于智慧安防。</p>
+<h3 id="5-2-动作捕捉"><a href="#5-2-动作捕捉" class="headerlink" title="5.2 动作捕捉"></a>5.2 动作捕捉</h3><p>通过检测出人体姿态，可以将图形、风格、特效等加载到人体上，推动增强现实领域的进步。</p>
+<h3 id="5-3-运动追踪"><a href="#5-3-运动追踪" class="headerlink" title="5.3 运动追踪"></a>5.3 运动追踪</h3><p>在交互游戏中追踪人体对象的运动，使用3D姿态估计来追踪人类玩家的运动，从而利用它来渲染虚拟人物的动作。</p>
+<h2 id="6-技术难点"><a href="#6-技术难点" class="headerlink" title="6. 技术难点"></a>6. 技术难点</h2><p>姿态估计至今仍面临一些技术难点，如很小到几乎看不见的关节点检测识别、灯光变化、衣物遮挡等。</p>
+<h1 id="三、技术方法"><a href="#三、技术方法" class="headerlink" title="三、技术方法"></a>三、技术方法</h1><h2 id="1-DeepPose"><a href="#1-DeepPose" class="headerlink" title="1. DeepPose"></a>1. DeepPose</h2><h3 id="1-1-思想"><a href="#1-1-思想" class="headerlink" title="1.1 思想"></a>1.1 思想</h3><p>DeepPose是第一篇将深度学习技术应用到人体姿态估计的论文。这一方法提出的时候，超越了之前未应用深度学习技术的所有方法。在此方法中，姿态估计被定义为基于卷积神经网络（CNN）的身体关节点回归问题。论文中通过使用级联CNN来提取姿态特征，以获得更好的效果。</p>
+<h3 id="1-2-模型"><a href="#1-2-模型" class="headerlink" title="1.2 模型"></a>1.2 模型</h3><p><img src="https://img-blog.csdnimg.cn/2020021218521261.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70" alt="DeepPose"><br>模型由7层AlexNet和一个输出层组成，输出层输出k个二维坐标(x, y)，其中k是关节点数量。<br>此模型一个优越的思想是使用级联回归器对预测进行细化，这样初始图片中粗糙的姿态得到了改进，也就得到了更好的姿态估计效果。这一思想的原理是：图像在预测关节点附近被裁剪，然后作为下一个stage 的输入，这样下一个stage 的姿态回归器得到的就是更加精细的图像，因此能够学习到更佳范围的特征，最终得到更优的预测。</p>
+<h3 id="1-3-特点"><a href="#1-3-特点" class="headerlink" title="1.3 特点"></a>1.3 特点</h3><ul>
+<li>将深度学习技术（CNN）应用到人体姿态估计中，因此出现了更多此方向的研究</li>
+<li>回归到(x, y)坐标很困难，增加了学习复杂度，削弱了泛化能力，因此在某些领域表现不佳<h2 id="2-Efficient-Object-Localization-Using-Convolutional-Network"><a href="#2-Efficient-Object-Localization-Using-Convolutional-Network" class="headerlink" title="2. Efficient Object Localization Using Convolutional Network"></a>2. Efficient Object Localization Using Convolutional Network</h2><h3 id="2-1思想"><a href="#2-1思想" class="headerlink" title="2.1思想"></a>2.1思想</h3>这种方法通过并行运行多个分辨率库中的图像来生成heatmap，以同时捕获各个比例的特征。输出是一个离散的heatmap，而不是连续的回归。heatmap预测关节点出现在每个像素点的概率。<h3 id="2-2-模型"><a href="#2-2-模型" class="headerlink" title="2.2 模型"></a>2.2 模型</h3><img src="https://img-blog.csdnimg.cn/20200212185620780.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70" alt="Efficient Object Localization Using Convolutional Network"><br>一个多分辨率的CNN架构（粗略heatmap模型）用于实现一个滑动窗口检测器来生成一个粗略的heatmap输出。论文的主要目的是恢复由于初始模型的池化而损失的空间精度。此模型通过使用额外的“姿势细化”卷积神经网络来细化粗略heatmap的定位结果。不同于标准的级联模型，此模型重新使用存在的卷积特征。这不仅减少了训练参数，还充当了粗略heatmap训练的调节器。<h3 id="2-3-特点"><a href="#2-3-特点" class="headerlink" title="2.3 特点"></a>2.3 特点</h3></li>
+<li>heatmap比直接的关节点回归效果好</li>
+<li>CNN和图形模型的联合使用</li>
+<li>缺乏结构建模。二维人体姿势的空间高度结构化，如身体左右对称、关节点限制、物理连接等。对这种结构建模可以使得定位可见关节点更容易，使得估计被遮挡的关节点成为可能。<h2 id="3-Convolutional-Pose-Machines"><a href="#3-Convolutional-Pose-Machines" class="headerlink" title="3. Convolutional Pose Machines"></a>3. Convolutional Pose Machines</h2><h3 id="3-1-思想"><a href="#3-1-思想" class="headerlink" title="3.1 思想"></a>3.1 思想</h3>此模型使用了一个叫姿态机（Pose Machine）的组件。姿态机由一个图像特征计算模块和预测模块组成。卷积姿态机（CPM）的多stage架构使得其能端到端训练。CPM的目的是学习长范围的空间关系，并且论文作者认为这一关系可由更大的感受野获得。<h3 id="3-2-模型"><a href="#3-2-模型" class="headerlink" title="3.2 模型"></a>3.2 模型</h3><img src="https://img-blog.csdnimg.cn/20200212185745499.png" alt="CPM"><br>一个CPM模型由至少3个stage组成。stage1 是固定不变的，stage3及之后的stage是stage2的重复。stage2 将原始图像和stage1的heatmap输出作为输入。宏观层面上，CPM通过随后的stage不断地细化heatmap。<br>为了避免梯度消失的情况，CPM在每个stage之后使用中间监督，即每个stage都计算损失之loss，这解决了多stage 的深度神经网络的问题。<h3 id="3-3-特点"><a href="#3-3-特点" class="headerlink" title="3.3 特点"></a>3.3 特点</h3></li>
+<li>提出了多stage的架构</li>
+<li>在模型提出时达到了当时的最优效果<h2 id="4-Human-Pose-Estimation-with-Iterative-Error-Feedback"><a href="#4-Human-Pose-Estimation-with-Iterative-Error-Feedback" class="headerlink" title="4. Human Pose Estimation with Iterative Error Feedback"></a>4. Human Pose Estimation with Iterative Error Feedback</h2><h3 id="4-1-思想"><a href="#4-1-思想" class="headerlink" title="4.1 思想"></a>4.1 思想</h3>此模型的思想较为简洁，即预测当前姿态估计的错误在哪并迭代校正。不同于之前的模型直接预测输出，此模型使用一个自校正模型，通过反馈错误的预测来逐渐改变初始的预测结果，这一过程称为迭代错误反馈（IEF）。<h3 id="4-2-模型"><a href="#4-2-模型" class="headerlink" title="4.2 模型"></a>4.2 模型</h3><img src="https://img-blog.csdnimg.cn/20200212185843144.png" alt="IEF"><br>模型的输入由图像I和前一个的输出组成。因为此模型是迭代过程，相同的输出会逐步被细化。<br>模型主要有两个函数，f和g。f根据输入输出校正值x，这一结果和当前的输出y相加生成yt+1，g将其之中的所有关节点坐标转换未heatmap，因此每一步的输出都能够堆叠到原始的图像I上。这一过程重复T词知道足够细化关节点坐标。<h3 id="4-3-特点"><a href="#4-3-特点" class="headerlink" title="4.3 特点"></a>4.3 特点</h3></li>
+<li>因为能够将原始图像和细化的校正信息作为输入，此模型能够在联合输入输出空间中提取关节点特征</li>
+<li>引入的迭代校正训练的思想<h2 id="5-Stacked-Hourglass-Networks-for-Human-Pose-Estimation"><a href="#5-Stacked-Hourglass-Networks-for-Human-Pose-Estimation" class="headerlink" title="5.    Stacked Hourglass Networks for Human Pose Estimation"></a>5.    Stacked Hourglass Networks for Human Pose Estimation</h2><h3 id="5-1-思想"><a href="#5-1-思想" class="headerlink" title="5.1 思想"></a>5.1 思想</h3>这是一篇里程碑式的论文，它介绍了一种新颖且直观的架构，并击败了之前所有的模型方法。它之所以被称作堆叠沙漏网络（Stacked Hourglass Networks），是因为这一网络结构由一步步的池化和上采样层组成，这使得网络结构很像一个个沙漏堆叠起来。<br>沙漏结构的设计思想来源于捕获各个比例的信息的需求。人的方位，四肢的排列以及相邻关节的关系是在图像中不同比例下得到最佳识别的众多线索之一（更小的分辨率捕获更多的序列特征和全局context）。<h3 id="5-2-模型"><a href="#5-2-模型" class="headerlink" title="5.2 模型"></a>5.2 模型</h3><img src="https://img-blog.csdnimg.cn/20200212185933790.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70" alt="Hourglass Networks"><br>网络在中间监督下重复实现自底向上和自顶向下：<br>自底向上：从高分辨率到低分辨率<br>自顶向下：从低分辨率到高分辨率<br>网络通过使用跳跃连接（skip connection）来在每个分辨率下保留空间信息，并通过上采样向后传递。<br>在每个沙漏中，每个box不只是简单的卷积神经网络结构，而是能够提取更丰富特征的残差网络块。<h3 id="5-3-特点"><a href="#5-3-特点" class="headerlink" title="5.3 特点"></a>5.3 特点</h3></li>
+<li>在每个比例捕获特征，通过这种方式，全局和局部特征和信息都被完全捕获，并通过网络进行学习进行预测</li>
+<li>使用残差块而非传统卷积神经网络，能够提取更丰富的特征</li>
+<li>模型更为简洁高效<h2 id="6-Deep-High-Resolution-Representation-Learning-for-Human-Pose-Estimation-HRNet"><a href="#6-Deep-High-Resolution-Representation-Learning-for-Human-Pose-Estimation-HRNet" class="headerlink" title="6. Deep High-Resolution Representation Learning for Human Pose Estimation [HRNet]"></a>6. Deep High-Resolution Representation Learning for Human Pose Estimation [HRNet]</h2><h3 id="6-1-思想"><a href="#6-1-思想" class="headerlink" title="6.1 思想"></a>6.1 思想</h3>HRNet(High-Resolution Network)模型在关节点检测、多人姿态估计和单人姿态估计任务中比所有之前的方法模型表现得更为出色，并且是目前最优越的模型。HRNet采取了一个十分简单的思想。之前大多数论文都采取从高分辨率到低分辨率再到高分辨率表示的想法，而HRNet在整个过程中都始终维护一个高分辨率表征，这一想法效果很好。<h3 id="6-2-模型"><a href="#6-2-模型" class="headerlink" title="6.2 模型"></a>6.2 模型</h3><img src="https://img-blog.csdnimg.cn/20200212190059668.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzg2NDMxNA==,size_16,color_FFFFFF,t_70" alt="HRNet"><br>整个HRNet的架构从一个高分辨率的子网络开始，并以此作为stage 1。之后渐渐加入一个个从高分辨率到低分辨率的子网络来组成更多的stage并且并行连接多分辨率的子网络。<br>通过在整个过程中一遍又一遍地在并行多分辨率子网之间交换信息，可以进行重复的多尺度融合。并且在整个网络中，没有像Stacked Hourglass使用中间heatmap监督。在HRNet中，heatmap通过使用MSE损失函数进行回归。<h3 id="6-3-特点"><a href="#6-3-特点" class="headerlink" title="6.3 特点"></a>6.3 特点</h3></li>
+<li>模型更为简洁直观</li>
+<li>始终维护一个高分辨率</li>
+<li>没有使用中间heatmap监督</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>万物皆有时，比如你我相遇</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechat_reward.jpg" alt="陈俊豹 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/25/ScrapyTutorial/" rel="prev" title="Scrapy 入门">
+      <i class="fa fa-chevron-left"></i> Scrapy 入门
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/25/DockerCommand/" rel="next" title="Docker 基础命令">
+      Docker 基础命令 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、前言"><span class="nav-number">1.</span> <span class="nav-text">一、前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、定义"><span class="nav-number">2.</span> <span class="nav-text">二、定义</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-二维姿态估计（2D-Pose-Estimation）"><span class="nav-number">2.1.</span> <span class="nav-text">1. 二维姿态估计（2D Pose Estimation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-三维姿态估计（3D-Pose-Estimation）"><span class="nav-number">2.2.</span> <span class="nav-text">2.    三维姿态估计（3D Pose Estimation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-单人姿态估计（Single-Person-Pose-Estimation）"><span class="nav-number">2.3.</span> <span class="nav-text">3.    单人姿态估计（Single-Person Pose Estimation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-多人姿态估计（Multi-Person-Pose-Estimation）"><span class="nav-number">2.4.</span> <span class="nav-text">4.    多人姿态估计（Multi-Person Pose Estimation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-应用场景"><span class="nav-number">2.5.</span> <span class="nav-text">5. 应用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-动作识别"><span class="nav-number">2.5.1.</span> <span class="nav-text">5.1 动作识别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-动作捕捉"><span class="nav-number">2.5.2.</span> <span class="nav-text">5.2 动作捕捉</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-运动追踪"><span class="nav-number">2.5.3.</span> <span class="nav-text">5.3 运动追踪</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-技术难点"><span class="nav-number">2.6.</span> <span class="nav-text">6. 技术难点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、技术方法"><span class="nav-number">3.</span> <span class="nav-text">三、技术方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-DeepPose"><span class="nav-number">3.1.</span> <span class="nav-text">1. DeepPose</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-思想"><span class="nav-number">3.1.1.</span> <span class="nav-text">1.1 思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-模型"><span class="nav-number">3.1.2.</span> <span class="nav-text">1.2 模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-特点"><span class="nav-number">3.1.3.</span> <span class="nav-text">1.3 特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Efficient-Object-Localization-Using-Convolutional-Network"><span class="nav-number">3.2.</span> <span class="nav-text">2. Efficient Object Localization Using Convolutional Network</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1思想"><span class="nav-number">3.2.1.</span> <span class="nav-text">2.1思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-模型"><span class="nav-number">3.2.2.</span> <span class="nav-text">2.2 模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-特点"><span class="nav-number">3.2.3.</span> <span class="nav-text">2.3 特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Convolutional-Pose-Machines"><span class="nav-number">3.3.</span> <span class="nav-text">3. Convolutional Pose Machines</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-思想"><span class="nav-number">3.3.1.</span> <span class="nav-text">3.1 思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-模型"><span class="nav-number">3.3.2.</span> <span class="nav-text">3.2 模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-特点"><span class="nav-number">3.3.3.</span> <span class="nav-text">3.3 特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Human-Pose-Estimation-with-Iterative-Error-Feedback"><span class="nav-number">3.4.</span> <span class="nav-text">4. Human Pose Estimation with Iterative Error Feedback</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-思想"><span class="nav-number">3.4.1.</span> <span class="nav-text">4.1 思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-模型"><span class="nav-number">3.4.2.</span> <span class="nav-text">4.2 模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-特点"><span class="nav-number">3.4.3.</span> <span class="nav-text">4.3 特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Stacked-Hourglass-Networks-for-Human-Pose-Estimation"><span class="nav-number">3.5.</span> <span class="nav-text">5.    Stacked Hourglass Networks for Human Pose Estimation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-思想"><span class="nav-number">3.5.1.</span> <span class="nav-text">5.1 思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-模型"><span class="nav-number">3.5.2.</span> <span class="nav-text">5.2 模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-特点"><span class="nav-number">3.5.3.</span> <span class="nav-text">5.3 特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Deep-High-Resolution-Representation-Learning-for-Human-Pose-Estimation-HRNet"><span class="nav-number">3.6.</span> <span class="nav-text">6. Deep High-Resolution Representation Learning for Human Pose Estimation [HRNet]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-思想"><span class="nav-number">3.6.1.</span> <span class="nav-text">6.1 思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-模型"><span class="nav-number">3.6.2.</span> <span class="nav-text">6.2 模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-特点"><span class="nav-number">3.6.3.</span> <span class="nav-text">6.3 特点</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="陈俊豹"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">陈俊豹</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Chen-Junbao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Chen-Junbao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:Chen.Junbao@outlook.com" title="邮箱 → mailto:Chen.Junbao@outlook.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>邮箱</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">陈俊豹</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'd3NBQDg58PJrydwLzPKmOmk3-gzGzoHsz',
+      appKey     : 'b3o0GRT7XddGocDlCeYmgy9X',
+      placeholder: "期待您写下评论~",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

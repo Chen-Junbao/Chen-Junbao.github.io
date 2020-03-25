@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chen-junbao.github.io","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="DockerfileDockerfile 在容器内定义了环境中所执行的操作。在此环境中，对于网络接口和磁盘驱动器等资源的访问是被虚拟化了的，这将独立于系统的其余部分，因此必须将端口映射到外部，并且具体说明要“复制”到环境中的文件。 Dockerfile 指令 构建指令：用于构建镜像，其指定的操作不会在运行镜像的容器中执行 设置指令：用于设置镜像的属性，其指定的操作会在运行镜像的容器中执行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="创建镜像">
+<meta property="og:url" content="https://chen-junbao.github.io/2020/03/25/Dockerfile/index.html">
+<meta property="og:site_name" content="陈俊豹的博客">
+<meta property="og:description" content="DockerfileDockerfile 在容器内定义了环境中所执行的操作。在此环境中，对于网络接口和磁盘驱动器等资源的访问是被虚拟化了的，这将独立于系统的其余部分，因此必须将端口映射到外部，并且具体说明要“复制”到环境中的文件。 Dockerfile 指令 构建指令：用于构建镜像，其指定的操作不会在运行镜像的容器中执行 设置指令：用于设置镜像的属性，其指定的操作会在运行镜像的容器中执行">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-25T13:17:15.000Z">
+<meta property="article:modified_time" content="2020-03-25T13:19:36.935Z">
+<meta property="article:author" content="陈俊豹">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://chen-junbao.github.io/2020/03/25/Dockerfile/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>创建镜像 | 陈俊豹的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband">
+      <a href="https://github.com/Chen-Junbao" target="_blank" rel="noopener" class="github-corner" aria-label="View My Github Profile"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    </div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">陈俊豹的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://chen-junbao.github.io/2020/03/25/Dockerfile/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="陈俊豹">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="陈俊豹的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          创建镜像
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-03-25 21:17:15 / 修改时间：21:19:36" itemprop="dateCreated datePublished" datetime="2020-03-25T21:17:15+08:00">2020-03-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Docker/" itemprop="url" rel="index"><span itemprop="name">Docker</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/03/25/Dockerfile/" class="post-meta-item leancloud_visitors" data-flag-title="创建镜像" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/03/25/Dockerfile/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/25/Dockerfile/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h2><p>Dockerfile 在容器内定义了环境中所执行的操作。在此环境中，对于网络接口和磁盘驱动器等资源的访问是被虚拟化了的，这将独立于系统的其余部分，因此必须将端口映射到外部，并且具体说明要“复制”到环境中的文件。</p>
+<h3 id="Dockerfile-指令"><a href="#Dockerfile-指令" class="headerlink" title="Dockerfile 指令"></a>Dockerfile 指令</h3><ol>
+<li>构建指令：用于构建镜像，其指定的操作<em>不会在运行镜像的容器中执行</em></li>
+<li>设置指令：用于设置镜像的属性，其指定的操作<em>会在运行镜像的容器中执行</em></li>
+</ol>
+<a id="more"></a>
+<h3 id="Dockerfile-指令说明"><a href="#Dockerfile-指令说明" class="headerlink" title="Dockerfile 指令说明"></a>Dockerfile 指令说明</h3><ul>
+<li><p>FROM<br>用于指定基础镜像，在基础镜像的基础上修改数据从而构建新的镜像。基础镜像可以是本地仓库也可以是远程仓库。(构建指令)</p>
+  <figure class="highlight plain"><figcaption><span><image name>:<tag name>```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- MAINTAINER</span><br><span class="line">将镜像制作者（维护者）的信息写入镜像中，执行 &#96;&#96;&#96;docker inspect&#96;&#96;&#96;是会输出该信息。（构建指令）</span><br><span class="line">    &#96;&#96;&#96;MAINTAINER &lt;maintainer name&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RUN<br>RUN可以运行任何被基础镜像支持的命令（即在基础镜像上执行一个进程），可以使用<strong>多条</strong>指令，指令较长时使用 \ 换行。（构建指令）<br>指令格式：</p>
+<ol>
+<li><code>RUN &lt;command&gt; &lt;param1&gt; &lt;param2&gt; ...</code><br>使用此指令相当于在 shell 中运行对应的指令</li>
+<li><code>RUN [&quot;&lt;executable&gt;&quot;, &quot;&lt;param1&gt;&quot;, &quot;&lt;param2&gt;&quot;, ...]</code><br>使用此指令相当于指定用对应的 <executable> 终端来执行</li>
+</ol>
+</li>
+<li><p>CMD<br>用于指定容器启动时的操作，可以是自定义脚本或命令，<em>只会执行一次，若含有多个命令，默认执行最后一个</em>。（设置命令）<br>该指令有三种格式：</p>
+<ol>
+<li><code>CMD [&quot;&lt;executable&gt;&quot;, &quot;&lt;param1&gt;&quot;, &quot;&lt;param2&gt;&quot;, ...]</code></li>
+<li><code>CMD &lt;command&gt; &lt;param1&gt; &lt;param2&gt; ...</code></li>
+<li><code>CMD [&quot;&lt;param1&gt;&quot;, &quot;&lt;param2&gt;&quot;, ...]</code><br>此命令格式与 ENTRYPOINT 配合使用，只作为完整命令的参数部分</li>
+</ol>
+</li>
+<li><p>ENTRYPOINT<br>用于指定容器启动时执行的命令，若设置多次只执行最后一次。（设置命令）<br>该指令有两种格式：</p>
+<ol>
+<li><code>ENTRYPOINT [&quot;&lt;executable&gt;&quot;, &quot;&lt;param1&gt;&quot;, &quot;&lt;param2&gt;&quot;, ...]</code><br>该指令形式既可以自己指定参数，也可以和 <code>CMD</code>配合使用，即将 <executable> 和固定的参数写在 ENTRYPOINT 指令中，将可变参数写在 CMD 中： <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ENTRYPOINT [&quot;&#x2F;usr&#x2F;bin&#x2F;ls&quot;, &quot;-a&quot;]</span><br><span class="line">CMD [&quot;-|&quot;]</span><br></pre></td></tr></table></figure></li>
+<li><code>ENTRYPOINT &lt;command&gt; &lt;param1&gt; &lt;param2&gt; ...</code><br> 独自使用和 CMD 类似，如果CMD也是完整的命令（即 CMD 命令中包含了对应的 <executable> 或 <command>，则会被覆盖（只执行最后一个CMD 或 ENTRYPOINT））</li>
+</ol>
+</li>
+<li><p>USER<br>设置启动容器的用户（默认为 root 用户）。（设置指令）</p>
+  <figure class="highlight plain"><figcaption><span><user>```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- EXPOSE</span><br><span class="line">将容器中的端口映射为宿主机中的端口。（设置指令）</span><br><span class="line">    &#96;&#96;&#96;EXPOSE &lt;container port&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ENV<br>以键值对的形式在镜像中设置环境变量，设置之后 RUN 指令可以使用该环境变量。在容器启动之后，可以使用<code>docker inspect</code>查看环境变量，使用<code>docker run --env &lt;key&gt;=&lt;value&gt;</code>设置或修改环境变量。（构建指令）</p>
+  <figure class="highlight plain"><figcaption><span><key> <value>```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- ADD</span><br><span class="line">复制指定的源文件或目录到容器中的指令路径中，源文件或目录是相对被构建的源目录的相对路径，同时可以是一个远程的 url。&lt;dest&gt; 是容器中的绝对路径。（构建指令）</span><br><span class="line">    1. 如果 &lt;src&gt; 是一个目录，那么会将该目录下的所有文件添加到容器中，*不包括目录*。</span><br><span class="line">    2. 如果 &lt;src&gt; 是一个可识别的压缩文件，docker 会进行解压缩。</span><br><span class="line">    3. 如果 &lt;src&gt; 是一个文件且 &lt;dest&gt; 中不以斜杠结尾，则会将 &lt;dest&gt; 视为文件，&lt;src&gt; 中的内容会写入到 &lt;dest&gt; 中。</span><br><span class="line">    4. 如果 &lt;src&gt; 是文件且 &lt;dest&gt; 中使用斜杠结束，则会将 &lt;src&gt; 文件拷贝到 &lt;dest&gt; 目录下。</span><br><span class="line"></span><br><span class="line">    &#96;&#96;&#96;ADD &lt;src&gt; &lt;dest&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>COPY<br>将宿主机的 <src> 复制到 <dest> 中，目标路径不存在时会自动创建。（构建指令）</p>
+  <figure class="highlight plain"><figcaption><span><src> <dest>```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&gt; ADD 命令更加强大，包括自动解压缩、复制远程 URL 文件等，但是更加推荐使用 COPY 命令，因为 ADD 命令在解压缩时可能会出现不自动解压缩的情况（因为压缩格式的原因等）。</span><br><span class="line"></span><br><span class="line">- VOLUME</span><br><span class="line">创建一个可以从本地主机或其他容器挂载的挂载点，使容器中的一个目录具有持久化存储数据的功能，该目录可以被容器本身使用也可以被其他容器使用。（设置指令）</span><br><span class="line">    &#96;&#96;&#96;VOLUME [&quot;&lt;mount point&gt;&quot;]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>WORKDIR<br>相当于 cd 命令，可以多次切换目录，为RUN，CMD，ENTRYPOINT 配置工作目录。<em>可以使用多个 WORKDIR 命令</em>。（设置命令）</p>
+  <figure class="highlight plain"><figcaption><span><path>```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- ONBUILD</span><br><span class="line">为所创建的镜像作为其他新创建镜像的基础镜像时执行的操作命令，即在创建本镜像时不运行，当本镜像作为别的基础镜像时再在构建时运行（可认为基础镜像为父镜像，而该命令即在它的子镜像构建时运行，相当于在子镜像构建时多加了一些命令）。</span><br><span class="line">    &#96;&#96;&#96;ONBUILD &lt;Dockerfile command&gt;</span><br></pre></td></tr></table></figure>
+<p>  例如， <code>ONBUILD RUN mkdir /test</code>表示以当前 Dockerfile 文件构建镜像 image_a 时不执行创建文件夹 test 的操作，但是以 image_a 作为基础镜像再创建子镜像 image_b 时，便会执行创建文件夹的操作。</p>
+</li>
+</ul>
+<h2 id="构建应用"><a href="#构建应用" class="headerlink" title="构建应用"></a>构建应用</h2><p>构建应用命令：<code>docker build -t &lt;tag name&gt;:&lt;version&gt;</code><br>构建好的镜像存放在本机的 Docker 镜像仓库中，可以通过 <code>docker images</code>查看。  </p>
+<blockquote>
+<p>若没有指定版本号，默认设置为 <code>latest</code></p>
+</blockquote>
+<h2 id="运行应用"><a href="#运行应用" class="headerlink" title="运行应用"></a>运行应用</h2><p>运行应用命令：<code>docker run -p &lt;host port&gt;:&lt;container port&gt; &lt;image name&gt;</code><br>Docker 容器在启动的时候，如果不指定端口映射参数，在容器外部无法通过网络访问容器内部的网络应用和服务。上述命令通过将对应的容器端口映射到宿主机指定的端口来运行容器。</p>
+<h2 id="标记镜像"><a href="#标记镜像" class="headerlink" title="标记镜像"></a>标记镜像</h2><p>标记镜像命令：<code>docker tag &lt;image name&gt; &lt;username&gt;/&lt;repository&gt;:&lt;tag&gt;</code><br>重新标记镜像之后会产生一个和原来镜像相同镜像 ID 的一个镜像。若要删除原来重复的镜像，可以使用如下命令：</p>
+<figure class="highlight docker"><figcaption><span>rmi <username>/<repository>:<tag>```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; 如果没有 username，则为 ```/&lt;repository&gt;:&lt;tag&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="发布镜像"><a href="#发布镜像" class="headerlink" title="发布镜像"></a>发布镜像</h2><p>发布镜像命令：<code>docker push &lt;username&gt;/&lt;repository&gt;:&lt;tag&gt;</code><br>发布镜像之后可以使用 <code>docker run -p &lt;host port&gt;:&lt;container port&gt; &lt;username&gt;/&lt;repository&gt;:&lt;tag&gt;</code>来运行容器。若本地没有对应的镜像，则会从 Docker Hub 上去拉取。若没有指定 tag，则会默认拉取 latest 标签的镜像 <em>（该镜像不一定是最新的）</em>。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>万物皆有时，比如你我相遇</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechat_reward.jpg" alt="陈俊豹 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/25/DockerCommand/" rel="prev" title="Docker 基础命令">
+      <i class="fa fa-chevron-left"></i> Docker 基础命令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/25/DockerCompose/" rel="next" title="Docker Compose">
+      Docker Compose <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Dockerfile"><span class="nav-number">1.</span> <span class="nav-text">Dockerfile</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dockerfile-指令"><span class="nav-number">1.1.</span> <span class="nav-text">Dockerfile 指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dockerfile-指令说明"><span class="nav-number">1.2.</span> <span class="nav-text">Dockerfile 指令说明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#构建应用"><span class="nav-number">2.</span> <span class="nav-text">构建应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行应用"><span class="nav-number">3.</span> <span class="nav-text">运行应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#标记镜像"><span class="nav-number">4.</span> <span class="nav-text">标记镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发布镜像"><span class="nav-number">5.</span> <span class="nav-text">发布镜像</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="陈俊豹"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">陈俊豹</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Chen-Junbao" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Chen-Junbao" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:Chen.Junbao@outlook.com" title="邮箱 → mailto:Chen.Junbao@outlook.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>邮箱</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">陈俊豹</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'd3NBQDg58PJrydwLzPKmOmk3-gzGzoHsz',
+      appKey     : 'b3o0GRT7XddGocDlCeYmgy9X',
+      placeholder: "期待您写下评论~",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
