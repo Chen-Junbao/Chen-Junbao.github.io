@@ -21,27 +21,30 @@
   </script>
 
   <meta property="og:type" content="website">
-<meta property="og:title" content="陈俊豹的博客">
-<meta property="og:url" content="https://chen-junbao.github.io/index.html">
+<meta property="og:title" content="分类">
+<meta property="og:url" content="https://chen-junbao.github.io/categories/index.html">
 <meta property="og:site_name" content="陈俊豹的博客">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-25T12:00:32.000Z">
+<meta property="article:modified_time" content="2020-03-25T12:03:35.535Z">
 <meta property="article:author" content="陈俊豹">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://chen-junbao.github.io/">
+<link rel="canonical" href="https://chen-junbao.github.io/categories/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
+    isHome : false,
     isPost : false,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>陈俊豹的博客</title>
+  <title>分类 | 陈俊豹的博客
+</title>
   
 
 
@@ -143,106 +146,53 @@
       <div class="main-inner">
         <div class="content-wrap">
           
+  
+  
 
-          <div class="content index">
+          <div class="content page">
             
 
   <div class="posts-expand">
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://chen-junbao.github.io/2020/03/25/MalwareClassification/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="陈俊豹">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="陈俊豹的博客">
-    </span>
+    
+    
+    
+    <div class="post-block" lang="zh-CN">
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/25/MalwareClassification/" class="post-title-link" itemprop="url">恶意代码分类</a>
-        </h2>
 
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
+<h1 class="post-title" itemprop="name headline">分类
+</h1>
 
-              <time title="创建时间：2020-03-25 14:02:57 / 修改时间：20:33:53" itemprop="dateCreated datePublished" datetime="2020-03-25T14:02:57+08:00">2020-03-25</time>
-            </span>
-
-          
-            <span id="/2020/03/25/MalwareClassification/" class="post-meta-item leancloud_visitors" data-flag-title="恶意代码分类" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="fa fa-comment-o"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2020/03/25/MalwareClassification/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/03/25/MalwareClassification/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
+<div class="post-meta">
   
 
-        </div>
-      </header>
+</div>
 
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
+</header>
 
       
-          <h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>通过对可执行文件进行反汇编之后，可以得到.asm文件和.bytes文件。针对不同的文件类型，可以采取不同的分类模型。</p>
-<ul>
-<li>asm文件<br>对于.asm文件，可以通过正则表达式提取其中的操作码，构成操作码序列，作为恶意代码特征，此问题也就转化为文本分类问题。</li>
-<li>bytes文件<br>对于.bytes文件，可以提取其中的十六进制序列，每两位十六进制数转换为一个0~255的十进制数，最后将.bytes文件转换为灰度图，将灰度图作为恶意代码特征，此问题也就转化为图像分类问题。</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/03/25/MalwareClassification/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
+      
+      
+      <div class="post-body">
+          <div class="category-all-page">
+            <div class="category-all-title">
+              暂无分类
             </div>
-          <!--/noindex-->
+            <div class="category-all">
+              
+            </div>
+          </div>
         
+      </div>
+      
+      
       
     </div>
+    
 
     
     
     
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
-
-  
-
 
 
           </div>
